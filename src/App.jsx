@@ -1,8 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
 // ── VOICE ENGINE ─────────────────────────────────────────
-let audioUnlocked = false;
-let pendingSpeak = null;
+const VOICE_IDS = {
+  tokiya: "4p5WXd3ZuWR9pPtRQuxC",
+  otoya: "4p5WXd3ZuWR9pPtRQuxC",
+  masato: "4p5WXd3ZuWR9pPtRQuxC",
+  ren: "4p5WXd3ZuWR9pPtRQuxC",
+};
+
+let currentAudio = null;
 
 function stripForTTS(text) {
   return text
@@ -12,53 +18,36 @@ function stripForTTS(text) {
     .replace(/[#>~`]/g, "").replace(/\s+/g, " ").trim();
 }
 
-function getBestFrenchVoice() {
-  if (!window.speechSynthesis) return null;
-  const v = window.speechSynthesis.getVoices();
-  return v.find(x => x.name === "Google français")
-    || v.find(x => x.name.toLowerCase().includes("french"))
-    || v.find(x => x.lang === "fr-FR")
-    || v.find(x => x.lang.startsWith("fr")) || null;
-}
+async function speakFrench(text, idolId, onStart, onEnd) {
+  stopAudio();
+  const clean = stripForTTS(text);
+  if (!clean) { if (onEnd) onEnd(); return; }
 
-function unlockAudio() {
-  if (audioUnlocked || !window.speechSynthesis) return;
-  const u = new SpeechSynthesisUtterance(" ");
-  u.volume = 0; u.lang = "fr-FR";
-  window.speechSynthesis.speak(u);
-  audioUnlocked = true;
-  if (pendingSpeak) {
-    const { text, onStart, onEnd } = pendingSpeak;
-    pendingSpeak = null;
-    setTimeout(() => doSpeak(text, onStart, onEnd), 300);
+  const voiceId = VOICE_IDS[idolId] || VOICE_IDS.tokiya;
+
+  try {
+    if (onStart) onStart();
+    const res = await fetch("/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: clean, voiceId }),
+    });
+
+    if (!res.ok) { if (onEnd) onEnd(); return; }
+    const data = await res.json();
+
+    currentAudio = new Audio(data.audio);
+    currentAudio.onended = () => { if (onEnd) onEnd(); currentAudio = null; };
+    currentAudio.onerror = () => { if (onEnd) onEnd(); currentAudio = null; };
+    currentAudio.play();
+  } catch (err) {
+    console.error("TTS error:", err);
+    if (onEnd) onEnd();
   }
 }
 
-function doSpeak(text, onStart, onEnd) {
-  if (!window.speechSynthesis) { if (onEnd) onEnd(); return; }
-  window.speechSynthesis.cancel();
-  const clean = stripForTTS(text);
-  if (!clean) { if (onEnd) onEnd(); return; }
-  const utter = new SpeechSynthesisUtterance(clean);
-  utter.lang = "fr-FR"; utter.rate = 0.82; utter.pitch = 0.75; utter.volume = 1.0;
-  const voice = getBestFrenchVoice();
-  if (voice) utter.voice = voice;
-  utter.onstart = () => { if (onStart) onStart(); };
-  utter.onend = () => { if (onEnd) onEnd(); };
-  utter.onerror = () => { if (onEnd) onEnd(); };
-  window.speechSynthesis.speak(utter);
-  setTimeout(() => { if (window.speechSynthesis.speaking) window.speechSynthesis.resume(); }, 150);
-}
-
-function speakFrench(text, onStart, onEnd) {
-  if (!window.speechSynthesis) { if (onEnd) onEnd(); return; }
-  if (!audioUnlocked) { pendingSpeak = { text, onStart, onEnd }; return; }
-  doSpeak(text, onStart, onEnd);
-}
-
 function stopAudio() {
-  if (window.speechSynthesis) window.speechSynthesis.cancel();
-  pendingSpeak = null;
+  if (currentAudio) { currentAudio.pause(); currentAudio = null; }
 }
 
 // ── LEVELS ────────────────────────────────────────────────
@@ -186,8 +175,8 @@ export default function FrenchApp() {
 
   const speak = useCallback((text, id) => {
     setSpeakingId(id);
-    speakFrench(text, () => setSpeaking(true), () => { setSpeaking(false); setSpeakingId(null); });
-  }, []);
+    speakFrench(text, idol.id, () => setSpeaking(true), () => { setSpeaking(false); setSpeakingId(null); });
+  }, [idol.id]);
 
   const handleUnlock = useCallback(() => {
     unlockAudio();
@@ -360,15 +349,6 @@ export default function FrenchApp() {
               background:`linear-gradient(90deg,${ac},#c9a0ff)`, borderRadius:8, transition:"width .5s" }} />
           </div>
         </div>
-        {/* Mic warning if not HTTPS */}
-        {!micAvailable && (
-          <div style={{ background:"rgba(255,160,0,0.15)", border:"1px solid rgba(255,160,0,0.3)",
-            borderRadius:12, padding:"8px 14px", fontSize:12, color:"#ffb74d", marginBottom:8 }}>
-            ⚠️ Micro non disponible en fichier local.<br/>
-            Déploie sur <strong>Netlify</strong> pour activer la voix.<br/>
-            <span style={{ color:"#a0a0a0" }}>Tu peux écrire tes réponses en attendant.</span>
-          </div>
-        )}
       </div>
       {/* Idol picker */}
       <div style={{ padding:"0 20px 16px" }}>

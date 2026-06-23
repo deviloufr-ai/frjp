@@ -6,8 +6,8 @@
   directory = "netlify/functions"
 
 [[redirects]]
-  from = "/api/claude"
-  to = "/.netlify/functions/claude"
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
   status = 200
 
 [[headers]]

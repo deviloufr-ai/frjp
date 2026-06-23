@@ -96,6 +96,38 @@ Utilise le contexte UtaPri. Corrige les auxiliaires et accords.`,
 NIVEAU 5 — 8 échanges. Conversation naturelle avec parce que/donc/mais.
 Pousse à argumenter ses opinions. Reste dans le personnage.`,
   },
+  {
+    id: 6, name: "Expert", jp: "専門家", icon: "🚀", xpRequired: 500, xpReward: 60,
+    color: "#00BCD4", maxTurns: 9, theme: "Mes projets futurs",
+    description: "Parler au futur et exprimer ses plans",
+    systemSuffix: `
+NIVEAU 6 — 9 échanges. Objectif : futur simple (je vais + infinitif / je ferai).
+Guide sur les projets futurs. Corrige les conjugaisons au futur.`,
+  },
+  {
+    id: 7, name: "Maître", jp: "マスター", icon: "👑", xpRequired: 700, xpReward: 75,
+    color: "#9C27B0", maxTurns: 10, theme: "Si j'étais...",
+    description: "Conditionnel et hypothèses",
+    systemSuffix: `
+NIVEAU 7 — 10 échanges. Objectif : conditionnel (si + imparfait / je ferais).
+Utilise des scénarios fantastiques ou UtaPri. Corrige les temps conditionnels.`,
+  },
+  {
+    id: 8, name: "Légende", jp: "伝説", icon: "⭐✨", xpRequired: 1000, xpReward: 100,
+    color: "#FFD700", maxTurns: 12, theme: "Français professionnel",
+    description: "Écrire des emails et présentations formelles",
+    systemSuffix: `
+NIVEAU 8 — 12 échanges. Objectif : français formel (vous, subjonctif, passé composé).
+Guide sur les emails professionnels et présentations. Corrige le registre de langue.`,
+  },
+  {
+    id: 9, name: "Suprême", jp: "究極", icon: "🌟🎭", xpRequired: 1500, xpReward: 150,
+    color: "#FF6B9D", maxTurns: 15, theme: "Débats et philosophie",
+    description: "Discussions complexes et argumentées",
+    systemSuffix: `
+NIVEAU 9 — 15 échanges max. Conversation avancée sur des sujets complexes.
+Pousse la créativité linguistique. Reste inspirant et bienveillant. Félicite généreusement.`,
+  },
 ];
 
 const IDOLS = [

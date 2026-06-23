@@ -179,7 +179,6 @@ export default function FrenchApp() {
   }, [idol.id]);
 
   const handleUnlock = useCallback(() => {
-    unlockAudio();
     setIsUnlocked(true);
   }, []);
 
